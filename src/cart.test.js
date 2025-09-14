@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 讀取購物車腳本內容
-const cartScriptPath = path.join(__dirname, 'cart-before-refactored.js');
+const cartScriptPath = path.join(__dirname, 'cart-refactored.js');
 const cartScriptContent = fs.readFileSync(cartScriptPath, 'utf8');
 
 // 在測試環境中執行購物車腳本
