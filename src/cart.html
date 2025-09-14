@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>購物車 - 購物車系統</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">🛍️ 購物商城</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">商品清單</a>
+                <a href="cart.html" class="nav-link active">購物車</a>
+            </nav>
+            <div class="cart-icon">
+                <a href="cart.html" class="cart-link">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="cart-section">
+                <h2>我的購物車</h2>
+
+                <!-- 空購物車提示 -->
+                <div id="empty-cart" class="empty-cart" style="display: none;">
+                    <div class="empty-cart-content">
+                        <h3>🛒 購物車是空的</h3>
+                        <p>還沒有添加任何商品到購物車</p>
+                        <a href="index.html" class="btn btn-primary">開始購物</a>
+                    </div>
+                </div>
+
+                <!-- 購物車商品列表 -->
+                <div id="cart-items" class="cart-items">
+                    <!-- 購物車商品將由 JavaScript 動態生成 -->
+                </div>
+
+                <!-- 購物車總計 -->
+                <div id="cart-total" class="cart-total" style="display: none;">
+                    <!-- 總計將由 JavaScript 動態生成 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 購物商城. 版權所有.</p>
+        </div>
+    </footer>
+
+    <!-- <script src="cart.js"></script> -->
+    <script src="cart-before-refactored.js"></script>
+</body>
+
+</html>

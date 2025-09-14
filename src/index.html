@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品清單 - 購物車系統</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">🛍️ 購物商城</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">商品清單</a>
+                <a href="cart.html" class="nav-link">購物車</a>
+            </nav>
+            <div class="cart-icon">
+                <a href="cart.html" class="cart-link">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>歡迎來到我們的購物商城</h2>
+                <p>發現最新的科技產品，享受優質的購物體驗</p>
+            </section>
+
+            <section class="products-section">
+                <h3>熱門商品</h3>
+                <div id="products-container" class="products-grid">
+                    <!-- 商品將由 JavaScript 動態生成 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 購物商城. 版權所有.</p>
+        </div>
+    </footer>
+
+    <script src="cart-before-refactored.js"></script>
+</body>
+
+</html>
