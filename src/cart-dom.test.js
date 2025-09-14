@@ -7,7 +7,7 @@ const cartHtmlPath = path.join(__dirname, 'cart.html');
 const cartHtmlContent = fs.readFileSync(cartHtmlPath, 'utf8');
 
 // 讀取購物車腳本內容
-const cartScriptPath = path.join(__dirname, 'cart-refactored.js');
+const cartScriptPath = path.join(__dirname, 'cart-refactored-functional.js');
 let cartScriptContent = fs.readFileSync(cartScriptPath, 'utf8');
 
 describe('購物車 DOM 驗證測試 (重構友善)', () => {
