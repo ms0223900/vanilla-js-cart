@@ -1,4 +1,3 @@
-const { screen, fireEvent, waitFor } = require('@testing-library/dom');
 const fs = require('fs');
 const path = require('path');
 
