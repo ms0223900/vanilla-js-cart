@@ -68,9 +68,9 @@ const dom = new JSDOM(`
     </body>
   </html>
 `, {
-    url: 'http://localhost',
-    pretendToBeVisual: true,
-    resources: 'usable'
+  url: 'http://localhost',
+  pretendToBeVisual: true,
+  resources: 'usable'
 });
 
 // Set up global objects
@@ -80,10 +80,10 @@ global.navigator = dom.window.navigator;
 
 // Mock localStorage
 const localStorageMock = {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
+  getItem: jest.fn(() => null),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
 };
 global.localStorage = localStorageMock;
 
@@ -91,40 +91,40 @@ global.localStorage = localStorageMock;
 global.localStorageMock = localStorageMock;
 
 // Mock console methods to avoid noise in tests
-global.console = {
-    ...console,
-    log: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
-};
+// global.console = {
+//     ...console,
+//     log: jest.fn(),
+//     error: jest.fn(),
+//     warn: jest.fn(),
+//     info: jest.fn(),
+// };
 
 // Clean up after each test
 afterEach(() => {
-    // Clear localStorage mock
-    localStorageMock.getItem.mockClear();
-    localStorageMock.setItem.mockClear();
-    localStorageMock.removeItem.mockClear();
-    localStorageMock.clear.mockClear();
+  // Clear localStorage mock
+  localStorageMock.getItem.mockClear();
+  localStorageMock.setItem.mockClear();
+  localStorageMock.removeItem.mockClear();
+  localStorageMock.clear.mockClear();
 
-    // Clear console mocks
-    jest.clearAllMocks();
+  // Clear console mocks
+  jest.clearAllMocks();
 
-    // Clear the cart items container
-    const cartItems = document.getElementById('cart-items');
-    if (cartItems) {
-        cartItems.innerHTML = '';
-    }
+  // Clear the cart items container
+  const cartItems = document.getElementById('cart-items');
+  if (cartItems) {
+    cartItems.innerHTML = '';
+  }
 
-    // Reset cart count
-    const cartCount = document.getElementById('cart-count');
-    if (cartCount) {
-        cartCount.textContent = '0';
-    }
+  // Reset cart count
+  const cartCount = document.getElementById('cart-count');
+  if (cartCount) {
+    cartCount.textContent = '0';
+  }
 
-    // Hide cart total and show empty cart
-    const cartTotal = document.getElementById('cart-total');
-    const emptyCart = document.getElementById('empty-cart');
-    if (cartTotal) cartTotal.style.display = 'none';
-    if (emptyCart) emptyCart.style.display = 'none';
+  // Hide cart total and show empty cart
+  const cartTotal = document.getElementById('cart-total');
+  const emptyCart = document.getElementById('empty-cart');
+  if (cartTotal) cartTotal.style.display = 'none';
+  if (emptyCart) emptyCart.style.display = 'none';
 });
