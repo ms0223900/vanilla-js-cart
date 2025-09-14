@@ -1,0 +1,764 @@
+# Cursor 共用規則檔案 - 優良程式設計原則
+# 整合 SOLID 原則、Clean Code、Martin Fowler 重構原則與 Clean Architecture
+
+## 🎯 總體原則
+
+### 程式碼品質優先
+- 始終優先考慮程式碼的可讀性、可維護性和可測試性
+- 寫程式碼時要假設下一個維護者是一個知道你住在哪裡的暴力精神病患
+- 優雅勝過聰明，簡單勝過複雜
+- 重構是持續的過程，不是一次性的事件
+
+### 溝通與協作
+- 程式碼應該像一篇好文章，能夠自解釋
+- 變數和函數名稱應該表達意圖，而非實作細節
+- 程式碼審查是學習和改進的機會，不是批評
+
+---
+
+## 🔧 SOLID 原則實作指導
+
+### Single Responsibility Principle (SRP) - 單一職責原則
+```javascript
+// ❌ 違反 SRP - 一個類別做太多事情
+class User {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+  
+  save() { /* 資料庫操作 */ }
+  sendEmail() { /* 發送郵件 */ }
+  validateEmail() { /* 驗證邏輯 */ }
+}
+
+// ✅ 遵循 SRP - 每個類別只有一個職責
+class User {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+}
+
+class UserRepository {
+  save(user) { /* 資料庫操作 */ }
+}
+
+class EmailService {
+  sendEmail(user, message) { /* 發送郵件 */ }
+}
+
+class EmailValidator {
+  validate(email) { /* 驗證邏輯 */ }
+}
+```
+
+### Open/Closed Principle (OCP) - 開放封閉原則
+```javascript
+// ✅ 使用策略模式實現 OCP
+class PaymentProcessor {
+  constructor(paymentMethod) {
+    this.paymentMethod = paymentMethod;
+  }
+  
+  processPayment(amount) {
+    return this.paymentMethod.process(amount);
+  }
+}
+
+class CreditCardPayment {
+  process(amount) {
+    // 信用卡處理邏輯
+  }
+}
+
+class PayPalPayment {
+  process(amount) {
+    // PayPal 處理邏輯
+  }
+}
+```
+
+### Liskov Substitution Principle (LSP) - 里氏替換原則
+```javascript
+// ✅ 子類別必須能夠替換父類別
+class Shape {
+  area() {
+    throw new Error('Must be implemented by subclass');
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+  
+  area() {
+    return this.width * this.height;
+  }
+}
+
+class Circle extends Shape {
+  constructor(radius) {
+    super();
+    this.radius = radius;
+  }
+  
+  area() {
+    return Math.PI * this.radius * this.radius;
+  }
+}
+
+// 任何地方使用 Shape 的地方都可以替換為 Rectangle 或 Circle
+function calculateTotalArea(shapes) {
+  return shapes.reduce((total, shape) => total + shape.area(), 0);
+}
+```
+
+### Interface Segregation Principle (ISP) - 介面隔離原則
+```javascript
+// ❌ 違反 ISP - 客戶被迫依賴不需要的方法
+class Worker {
+  work() {}
+  eat() {}
+  sleep() {}
+}
+
+// ✅ 遵循 ISP - 分離介面
+class Workable {
+  work() {}
+}
+
+class Eatable {
+  eat() {}
+}
+
+class Sleepable {
+  sleep() {}
+}
+
+class HumanWorker extends Workable, Eatable, Sleepable {}
+class RobotWorker extends Workable {} // 不需要 eat 和 sleep
+```
+
+### Dependency Inversion Principle (DIP) - 依賴反轉原則
+```javascript
+// ❌ 違反 DIP - 高層模組依賴低層模組
+class EmailService {
+  sendEmail(message) {
+    // 直接依賴具體的 SMTP 服務
+    const smtp = new SMTPProvider();
+    smtp.send(message);
+  }
+}
+
+// ✅ 遵循 DIP - 依賴抽象
+class EmailService {
+  constructor(emailProvider) {
+    this.emailProvider = emailProvider;
+  }
+  
+  sendEmail(message) {
+    this.emailProvider.send(message);
+  }
+}
+
+// 可以注入不同的實作
+const emailService = new EmailService(new SMTPProvider());
+const emailService2 = new EmailService(new SendGridProvider());
+```
+
+---
+
+## 📝 Clean Code 指導原則
+
+### 命名規範
+```javascript
+// ✅ 好的命名 - 表達意圖
+const isUserAuthenticated = true;
+const calculateTotalPrice = (items) => { /* ... */ };
+const MAX_RETRY_ATTEMPTS = 3;
+
+// ❌ 不好的命名 - 不明確
+const flag = true;
+const calc = (data) => { /* ... */ };
+const num = 3;
+
+// ✅ 布林值命名
+const hasPermission = true;
+const canEdit = false;
+const shouldValidate = true;
+
+// ✅ 函數命名 - 動詞開頭
+const getUserById = (id) => { /* ... */ };
+const validateEmail = (email) => { /* ... */ };
+const sendNotification = (message) => { /* ... */ };
+```
+
+### 函數設計
+```javascript
+// ✅ 小函數，單一職責
+function calculateTax(price, taxRate) {
+  return price * taxRate;
+}
+
+function calculateTotal(price, tax) {
+  return price + tax;
+}
+
+// ✅ 避免副作用
+function processOrder(order) {
+  const processedOrder = { ...order };
+  processedOrder.status = 'processed';
+  processedOrder.processedAt = new Date();
+  return processedOrder;
+}
+
+// ❌ 有副作用
+function processOrder(order) {
+  order.status = 'processed'; // 修改原始物件
+  return order;
+}
+```
+
+### 註解規範
+```javascript
+// ✅ 好的註解 - 解釋「為什麼」而不是「什麼」
+// 使用位元運算來提高效能，因為這裡需要處理大量資料
+function hashString(str) {
+  return str.split('').reduce((hash, char) => {
+    return ((hash << 5) - hash + char.charCodeAt(0)) & 0xffffffff;
+  }, 0);
+}
+
+// ✅ 複雜業務邏輯的註解
+function calculateDiscountPrice(originalPrice, userType, purchaseHistory) {
+  // 根據用戶類型和購買歷史計算折扣
+  // VIP 用戶享有額外 10% 折扣
+  let discountRate = 0.1; // 基礎折扣率
+  
+  if (userType === 'VIP') {
+    discountRate += 0.1; // VIP 額外折扣
+  }
+  
+  // 老客戶額外折扣
+  if (purchaseHistory.length > 10) {
+    discountRate += 0.05;
+  }
+  
+  return originalPrice * (1 - discountRate);
+}
+
+// ❌ 不好的註解
+// 設定變數 x 為 5
+const x = 5;
+
+// 迴圈從 0 到 10
+for (let i = 0; i < 10; i++) {
+  // 印出 i
+  console.log(i);
+}
+```
+
+---
+
+## 🔄 Martin Fowler 重構原則
+
+### 重構時機
+- 當你發現程式碼有「壞味道」時
+- 在添加新功能前，先重構現有程式碼
+- 當程式碼難以理解時
+- 當測試變得困難時
+
+### 常見重構技巧
+
+#### Extract Method (提取方法)
+```javascript
+// ❌ 長方法
+function printOwing(invoice) {
+  let outstanding = 0;
+  
+  console.log("***********************");
+  console.log("**** Customer Owes ****");
+  console.log("***********************");
+  
+  for (const o of invoice.orders) {
+    outstanding += o.amount;
+  }
+  
+  const today = new Date();
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
+  
+  console.log(`name: ${invoice.customer}`);
+  console.log(`amount: ${outstanding}`);
+  console.log(`due: ${invoice.dueDate.toLocaleDateString()}`);
+}
+
+// ✅ 重構後
+function printOwing(invoice) {
+  printBanner();
+  const outstanding = calculateOutstanding(invoice);
+  recordDueDate(invoice);
+  printDetails(invoice, outstanding);
+}
+
+function printBanner() {
+  console.log("***********************");
+  console.log("**** Customer Owes ****");
+  console.log("***********************");
+}
+
+function calculateOutstanding(invoice) {
+  return invoice.orders.reduce((total, order) => total + order.amount, 0);
+}
+
+function recordDueDate(invoice) {
+  const today = new Date();
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
+}
+
+function printDetails(invoice, outstanding) {
+  console.log(`name: ${invoice.customer}`);
+  console.log(`amount: ${outstanding}`);
+  console.log(`due: ${invoice.dueDate.toLocaleDateString()}`);
+}
+```
+
+#### Replace Conditional with Polymorphism (以多型取代條件式)
+```javascript
+// ❌ 使用條件式
+class Bird {
+  getSpeed(type) {
+    switch (type) {
+      case 'EUROPEAN':
+        return this.getBaseSpeed();
+      case 'AFRICAN':
+        return this.getBaseSpeed() - this.getLoadFactor() * this.numberOfCoconuts;
+      case 'NORWEGIAN_BLUE':
+        return this.isNailed ? 0 : this.getBaseSpeed(this.voltage);
+      default:
+        throw new Error('Unknown bird type');
+    }
+  }
+}
+
+// ✅ 使用多型
+class Bird {
+  getSpeed() {
+    throw new Error('Must be implemented by subclass');
+  }
+}
+
+class EuropeanBird extends Bird {
+  getSpeed() {
+    return this.getBaseSpeed();
+  }
+}
+
+class AfricanBird extends Bird {
+  getSpeed() {
+    return this.getBaseSpeed() - this.getLoadFactor() * this.numberOfCoconuts;
+  }
+}
+
+class NorwegianBlueBird extends Bird {
+  getSpeed() {
+    return this.isNailed ? 0 : this.getBaseSpeed(this.voltage);
+  }
+}
+```
+
+#### Extract Class (提取類別)
+```javascript
+// ❌ 類別過大
+class Person {
+  constructor(name, officeAreaCode, officeNumber) {
+    this.name = name;
+    this.officeAreaCode = officeAreaCode;
+    this.officeNumber = officeNumber;
+  }
+  
+  getName() { return this.name; }
+  getOfficeAreaCode() { return this.officeAreaCode; }
+  getOfficeNumber() { return this.officeNumber; }
+  getTelephoneNumber() {
+    return `(${this.officeAreaCode}) ${this.officeNumber}`;
+  }
+}
+
+// ✅ 提取類別
+class Person {
+  constructor(name, officePhone) {
+    this.name = name;
+    this.officePhone = officePhone;
+  }
+  
+  getName() { return this.name; }
+  getTelephoneNumber() {
+    return this.officePhone.toString();
+  }
+}
+
+class TelephoneNumber {
+  constructor(areaCode, number) {
+    this.areaCode = areaCode;
+    this.number = number;
+  }
+  
+  toString() {
+    return `(${this.areaCode}) ${this.number}`;
+  }
+}
+```
+
+---
+
+## 🏗️ Clean Architecture 實作指導
+
+### 分層架構
+```
+┌─────────────────────────────────────┐
+│           Presentation Layer        │  ← UI, Controllers, Presenters
+├─────────────────────────────────────┤
+│           Application Layer         │  ← Use Cases, Application Services
+├─────────────────────────────────────┤
+│            Domain Layer             │  ← Entities, Value Objects, Domain Services
+├─────────────────────────────────────┤
+│          Infrastructure Layer       │  ← Database, External APIs, Frameworks
+└─────────────────────────────────────┘
+```
+
+### 依賴方向
+```javascript
+// ✅ 正確的依賴方向
+// Presentation Layer
+class UserController {
+  constructor(userService) {
+    this.userService = userService; // 依賴 Application Layer
+  }
+  
+  async createUser(req, res) {
+    const userData = req.body;
+    const user = await this.userService.createUser(userData);
+    res.json(user);
+  }
+}
+
+// Application Layer
+class UserService {
+  constructor(userRepository, emailService) {
+    this.userRepository = userRepository; // 依賴 Infrastructure Layer
+    this.emailService = emailService;     // 依賴 Infrastructure Layer
+  }
+  
+  async createUser(userData) {
+    const user = new User(userData.name, userData.email);
+    await this.userRepository.save(user);
+    await this.emailService.sendWelcomeEmail(user.email);
+    return user;
+  }
+}
+
+// Domain Layer
+class User {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+    this.createdAt = new Date();
+  }
+  
+  isValid() {
+    return this.name && this.email && this.email.includes('@');
+  }
+}
+
+// Infrastructure Layer
+class UserRepository {
+  async save(user) {
+    // 資料庫操作
+  }
+}
+
+class EmailService {
+  async sendWelcomeEmail(email) {
+    // 發送郵件
+  }
+}
+```
+
+### 使用依賴注入
+```javascript
+// ✅ 使用依賴注入容器
+class Container {
+  constructor() {
+    this.services = new Map();
+  }
+  
+  register(name, factory) {
+    this.services.set(name, factory);
+  }
+  
+  resolve(name) {
+    const factory = this.services.get(name);
+    if (!factory) {
+      throw new Error(`Service ${name} not found`);
+    }
+    return factory(this);
+  }
+}
+
+// 註冊服務
+const container = new Container();
+container.register('userRepository', () => new UserRepository());
+container.register('emailService', () => new EmailService());
+container.register('userService', (c) => new UserService(
+  c.resolve('userRepository'),
+  c.resolve('emailService')
+));
+
+// 使用服務
+const userService = container.resolve('userService');
+```
+
+---
+
+## 🧪 測試最佳實踐
+
+### 測試金字塔
+```
+        /\
+       /  \
+      / E2E \     ← 少量端到端測試
+     /______\
+    /        \
+   / Integration \ ← 適量整合測試
+  /______________\
+ /                \
+/      Unit        \ ← 大量單元測試
+/__________________\
+```
+
+### 單元測試規範
+```javascript
+// ✅ 好的單元測試
+describe('UserService', () => {
+  let userService;
+  let mockUserRepository;
+  let mockEmailService;
+  
+  beforeEach(() => {
+    mockUserRepository = {
+      save: jest.fn(),
+      findByEmail: jest.fn()
+    };
+    mockEmailService = {
+      sendWelcomeEmail: jest.fn()
+    };
+    userService = new UserService(mockUserRepository, mockEmailService);
+  });
+  
+  describe('createUser', () => {
+    it('should create user and send welcome email', async () => {
+      // Arrange
+      const userData = { name: 'John Doe', email: 'john@example.com' };
+      const expectedUser = new User(userData.name, userData.email);
+      
+      // Act
+      const result = await userService.createUser(userData);
+      
+      // Assert
+      expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
+      expect(mockEmailService.sendWelcomeEmail).toHaveBeenCalledWith(userData.email);
+      expect(result).toEqual(expectedUser);
+    });
+    
+    it('should throw error when user data is invalid', async () => {
+      // Arrange
+      const invalidUserData = { name: '', email: 'invalid-email' };
+      
+      // Act & Assert
+      await expect(userService.createUser(invalidUserData))
+        .rejects
+        .toThrow('Invalid user data');
+    });
+  });
+});
+```
+
+### 測試命名規範
+```javascript
+// ✅ 測試名稱應該描述行為
+describe('ShoppingCart', () => {
+  describe('addItem', () => {
+    it('should add item to cart when item is valid', () => {});
+    it('should increase quantity when adding existing item', () => {});
+    it('should throw error when item is null', () => {});
+  });
+  
+  describe('calculateTotal', () => {
+    it('should return zero for empty cart', () => {});
+    it('should calculate total price including tax', () => {});
+    it('should apply discount when applicable', () => {});
+  });
+});
+```
+
+### AAA 模式 (Arrange-Act-Assert)
+```javascript
+// ✅ 使用 AAA 模式
+it('should calculate total with tax', () => {
+  // Arrange
+  const cart = new ShoppingCart();
+  const item = new Item('Book', 100);
+  cart.addItem(item);
+  const taxRate = 0.1;
+  
+  // Act
+  const total = cart.calculateTotal(taxRate);
+  
+  // Assert
+  expect(total).toBe(110);
+});
+```
+
+---
+
+## 🚀 功能開發流程
+
+### 1. 需求分析
+- 理解業務需求
+- 識別邊界條件
+- 定義驗收標準
+
+### 2. 設計階段
+- 設計 API 介面
+- 識別依賴關係
+- 規劃資料流
+
+### 3. 實作順序
+```javascript
+// 1. 先寫測試 (TDD)
+describe('PaymentProcessor', () => {
+  it('should process credit card payment', async () => {
+    // 測試驅動開發
+  });
+});
+
+// 2. 實作最簡單的程式碼讓測試通過
+class PaymentProcessor {
+  async processPayment(amount, paymentMethod) {
+    // 最小實作
+    return { success: true, amount };
+  }
+}
+
+// 3. 重構程式碼
+class PaymentProcessor {
+  constructor(paymentGateway) {
+    this.paymentGateway = paymentGateway;
+  }
+  
+  async processPayment(amount, paymentMethod) {
+    this.validatePayment(amount, paymentMethod);
+    return await this.paymentGateway.charge(amount, paymentMethod);
+  }
+  
+  validatePayment(amount, paymentMethod) {
+    if (amount <= 0) {
+      throw new Error('Invalid amount');
+    }
+    if (!paymentMethod) {
+      throw new Error('Payment method required');
+    }
+  }
+}
+```
+
+### 4. 程式碼審查檢查清單
+- [ ] 程式碼是否符合 SOLID 原則？
+- [ ] 函數是否小而專注？
+- [ ] 變數和函數命名是否清晰？
+- [ ] 是否有適當的錯誤處理？
+- [ ] 測試覆蓋率是否足夠？
+- [ ] 是否有重複程式碼？
+- [ ] 依賴關係是否清晰？
+
+---
+
+## 📋 程式碼審查標準
+
+### 必須修正的問題
+- 安全漏洞
+- 效能問題
+- 邏輯錯誤
+- 測試失敗
+
+### 建議修正的問題
+- 程式碼重複
+- 複雜度過高
+- 命名不當
+- 缺少註解
+
+### 可選的改進
+- 效能優化
+- 程式碼風格
+- 重構建議
+
+---
+
+## 🔍 程式碼品質檢查
+
+### ESLint 配置建議
+```json
+{
+  "extends": [
+    "eslint:recommended",
+    "@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "max-lines-per-function": ["error", 50],
+    "max-params": ["error", 3],
+    "complexity": ["error", 10],
+    "no-magic-numbers": "warn",
+    "prefer-const": "error",
+    "no-var": "error"
+  }
+}
+```
+
+### 程式碼度量標準
+- 函數行數：< 50 行
+- 函數參數：< 4 個
+- 圈複雜度：< 10
+- 測試覆蓋率：> 80%
+
+---
+
+## 📚 學習資源
+
+### 推薦書籍
+- Clean Code - Robert C. Martin
+- Refactoring - Martin Fowler
+- Clean Architecture - Robert C. Martin
+- Design Patterns - Gang of Four
+
+### 實用工具
+- ESLint - 程式碼品質檢查
+- Prettier - 程式碼格式化
+- Jest - 測試框架
+- SonarQube - 程式碼品質分析
+
+---
+
+## 🎯 總結
+
+記住這些原則的核心理念：
+1. **可讀性** - 程式碼是寫給人看的，不是機器
+2. **可維護性** - 程式碼會改變，設計要考慮未來
+3. **可測試性** - 好的程式碼容易測試
+4. **簡潔性** - 簡單勝過複雜
+5. **一致性** - 保持程式碼風格一致
+
+遵循這些原則，你將寫出更好的程式碼，提高團隊生產力，減少 bug，並讓程式碼更容易維護和擴展。
