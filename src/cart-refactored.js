@@ -601,13 +601,20 @@ class CartService {
     }
 }
 
+class ProductService {
+    async getAllProducts() {
+        throw new Error('getAllProducts must be implemented');
+    }
+}
+
 // ==================== 商品服務 / Product Service ====================
 
 /**
  * 商品服務 / Product Service
  */
-class ProductService {
+class MockProductServiceImpl extends ProductService {
     constructor() {
+        super();
         this.products = [
             new Product('1', 'iPhone 15 Pro', 36900, 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro', '最新的 iPhone 15 Pro，搭載 A17 Pro 晶片'),
             new Product('2', 'MacBook Air M2', 37900, 'https://via.placeholder.com/200x200/34C759/FFFFFF?text=MacBook+Air', '輕薄便攜的 MacBook Air，搭載 M2 晶片'),
@@ -625,13 +632,6 @@ class ProductService {
         // 模擬非同步操作
         await new Promise(resolve => setTimeout(resolve, 1300));
         return this.products;
-    }
-
-    /**
-     * 根據 ID 取得商品 / Get product by ID
-     */
-    getProductById(id) {
-        return this.products.find(product => product.id === id);
     }
 }
 
@@ -654,7 +654,7 @@ class ShoppingCartApp {
         this.storageService = new LocalStorageService();
         this.notificationService = new NotificationService();
         this.domService = new DOMService();
-        this.productService = new ProductService();
+        this.productService = new MockProductServiceImpl();
     }
 
     /**
