@@ -30,6 +30,8 @@
  * @property {CartItem[]} items - 購物車項目
  * @property {number} totalCount - 總數量
  * @property {number} totalPrice - 總價格
+ * @property {number} shippingFee - 運費
+ * @property {number} finalTotal - 最終總金額（商品總價 + 運費）
  */
 
 // 商品資料
@@ -83,6 +85,12 @@ const STORAGE_KEYS = {
     CART: 'shoppingCart'
 };
 
+// 運費計算常數
+const SHIPPING_CONFIG = {
+    FREE_SHIPPING_THRESHOLD: 5000, // 免運門檻
+    SHIPPING_FEE: 100 // 運費
+};
+
 // DOM 元素 ID
 const DOM_IDS = {
     CART_COUNT: 'cart-count',
@@ -103,7 +111,9 @@ const DOM_IDS = {
 const createEmptyCart = () => ({
     items: [],
     totalCount: 0,
-    totalPrice: 0
+    totalPrice: 0,
+    shippingFee: 0,
+    finalTotal: 0
 });
 
 /**
@@ -123,15 +133,42 @@ const calculateTotalPrice = (items) =>
     items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
 /**
+ * 計算運費
+ * @param {number} totalPrice - 商品總價格
+ * @returns {number} 運費
+ */
+const calculateShippingFee = (totalPrice) => {
+    return totalPrice >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD
+        ? 0
+        : SHIPPING_CONFIG.SHIPPING_FEE;
+};
+
+/**
+ * 計算最終總金額（商品總價 + 運費）
+ * @param {number} totalPrice - 商品總價格
+ * @param {number} shippingFee - 運費
+ * @returns {number} 最終總金額
+ */
+const calculateFinalTotal = (totalPrice, shippingFee) => totalPrice + shippingFee;
+
+/**
  * 更新購物車狀態的計算屬性
  * @param {CartState} cartState - 購物車狀態
  * @returns {CartState} 更新後的購物車狀態
  */
-const updateCartCalculations = (cartState) => ({
-    ...cartState,
-    totalCount: calculateTotalCount(cartState.items),
-    totalPrice: calculateTotalPrice(cartState.items)
-});
+const updateCartCalculations = (cartState) => {
+    const totalPrice = calculateTotalPrice(cartState.items);
+    const shippingFee = calculateShippingFee(totalPrice);
+    const finalTotal = calculateFinalTotal(totalPrice, shippingFee);
+
+    return {
+        ...cartState,
+        totalCount: calculateTotalCount(cartState.items),
+        totalPrice,
+        shippingFee,
+        finalTotal
+    };
+};
 
 /**
  * 根據商品 ID 查找購物車項目
@@ -343,7 +380,13 @@ const safeSetToStorage = (key, value) => {
  */
 const loadCartFromStorage = () => {
     const savedItems = safeGetFromStorage(STORAGE_KEYS.CART, []);
-    const cartState = { items: savedItems, totalCount: 0, totalPrice: 0 };
+    const cartState = {
+        items: savedItems,
+        totalCount: 0,
+        totalPrice: 0,
+        shippingFee: 0,
+        finalTotal: 0
+    };
     return isValidCartState(cartState) ? updateCartCalculations(cartState) : createEmptyCart();
 };
 
@@ -403,10 +446,12 @@ const updateCartItemsDisplay = (items) => {
 
 /**
  * 更新購物車總計顯示
- * @param {number} totalPrice - 總價格
+ * @param {number} totalPrice - 商品總價格
+ * @param {number} shippingFee - 運費
+ * @param {number} finalTotal - 最終總金額
  * @param {boolean} isEmpty - 是否為空購物車
  */
-const updateCartTotalDisplay = (totalPrice, isEmpty) => {
+const updateCartTotalDisplay = (totalPrice, shippingFee, finalTotal, isEmpty) => {
     const totalElement = safeGetElement(DOM_IDS.CART_TOTAL);
     const emptyElement = safeGetElement(DOM_IDS.EMPTY_CART);
 
@@ -417,7 +462,17 @@ const updateCartTotalDisplay = (totalPrice, isEmpty) => {
             totalElement.style.display = 'block';
             totalElement.innerHTML = `
                 <div class="total-summary">
-                    <h3>總計: ${formatPrice(totalPrice)}</h3>
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>商品總計: ${formatPrice(totalPrice)}</span>
+                        </div>
+                        <div class="price-item">
+                            <span>運費: ${formatPrice(shippingFee)}</span>
+                        </div>
+                        <div class="price-item total">
+                            <span>總金額: ${formatPrice(finalTotal)}</span>
+                        </div>
+                    </div>
                     <button class="clear-cart-btn" onclick="clearAllCart()">清空購物車</button>
                 </div>
             `;
@@ -436,7 +491,12 @@ const updateCartTotalDisplay = (totalPrice, isEmpty) => {
 const updateCartDisplayInternal = (cartState) => {
     updateCartCountDisplay(cartState.totalCount);
     updateCartItemsDisplay(cartState.items);
-    updateCartTotalDisplay(cartState.totalPrice, cartState.items.length === 0);
+    updateCartTotalDisplay(
+        cartState.totalPrice,
+        cartState.shippingFee,
+        cartState.finalTotal,
+        cartState.items.length === 0
+    );
 };
 
 /**
@@ -631,7 +691,7 @@ var changeQuantity = (productId, quantity) => cartManager.updateQuantity(product
 var clearAllCart = () => cartManager.clear();
 var updateCartCount = () => cartManager.updateDisplay();
 var updateCartDisplay = () => cartManager.updateDisplay();
-var calculateTotal = () => cartManager.getState().totalPrice;
+var calculateTotal = () => cartManager.getState().finalTotal;
 var showMessage = (message) => showNotification(message);
 
 // 用於測試的函數
@@ -684,6 +744,8 @@ if (typeof module !== 'undefined' && module.exports) {
         createEmptyCart,
         calculateTotalCount,
         calculateTotalPrice,
+        calculateShippingFee,
+        calculateFinalTotal,
         addItemToCart,
         removeItemFromCart,
         updateItemQuantity,
@@ -719,6 +781,7 @@ if (typeof module !== 'undefined' && module.exports) {
         // 常數
         PRODUCTS,
         STORAGE_KEYS,
+        SHIPPING_CONFIG,
         DOM_IDS
     };
 }

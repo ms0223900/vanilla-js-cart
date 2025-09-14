@@ -603,4 +603,178 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             expect(cartItems.innerHTML).toContain('iPhone 15 Pro');
         });
     });
+
+    describe('運費計算功能測試', () => {
+        it('購物車金額超過 $5000 時，運費應該為 $0', async () => {
+            const expensiveProduct = {
+                id: '1',
+                name: 'iPhone 15 Pro',
+                price: 36900,
+                image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro'
+            };
+
+            window.addToCart(expensiveProduct);
+
+            const cartTotal = document.getElementById('cart-total');
+
+            // 驗證運費顯示為 $0
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 0');
+            // 驗證總金額等於商品金額（無運費）
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 36,900');
+        });
+
+        it('購物車金額小於 $5000 時，運費應該為 $100', async () => {
+            const cheapProduct = {
+                id: '1',
+                name: 'AirPods Pro',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+
+            window.addToCart(cheapProduct);
+
+            const cartTotal = document.getElementById('cart-total');
+
+            // 驗證運費顯示為 $100
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 100');
+            // 驗證總金額等於商品金額 + 運費
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 2,100');
+        });
+
+        it('購物車金額等於 $5000 時，運費應該為 $0', async () => {
+            const product = {
+                id: '1',
+                name: 'Test Product',
+                price: 5000,
+                image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=Test'
+            };
+
+            window.addToCart(product);
+
+            const cartTotal = document.getElementById('cart-total');
+
+            // 驗證運費顯示為 $0
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 0');
+            // 驗證總金額等於商品金額（無運費）
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 5,000');
+        });
+
+        it('多個商品總金額超過 $5000 時，運費應該為 $0', async () => {
+            const product1 = {
+                id: '1',
+                name: 'AirPods Pro',
+                price: 7490,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+            const product2 = {
+                id: '2',
+                name: 'Apple Watch Series 9',
+                price: 12900,
+                image: 'https://via.placeholder.com/200x200/FF9500/FFFFFF?text=Apple+Watch'
+            };
+
+            window.addToCart(product1);
+            window.addToCart(product2);
+
+            const cartTotal = document.getElementById('cart-total');
+
+            // 驗證運費顯示為 $0
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 0');
+            // 驗證總金額等於商品總金額（無運費）
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 20,390');
+        });
+
+        it('多個商品總金額小於 $5000 時，運費應該為 $100', async () => {
+            const product1 = {
+                id: '1',
+                name: 'AirPods Pro',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+            const product2 = {
+                id: '2',
+                name: 'Test Product',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF9500/FFFFFF?text=Test'
+            };
+
+            window.addToCart(product1);
+            window.addToCart(product2);
+
+            const cartTotal = document.getElementById('cart-total');
+
+            // 驗證運費顯示為 $100
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 100');
+            // 驗證總金額等於商品總金額 + 運費
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 4,100');
+        });
+
+        it('更新商品數量後運費應該重新計算', async () => {
+            const product = {
+                id: '1',
+                name: 'AirPods Pro',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+
+            // 初始添加商品，金額小於 $5000
+            window.addToCart(product);
+
+            let cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 100');
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 2,100');
+
+            // 增加數量使總金額超過 $5000
+            window.changeQuantity('1', 3); // 2000 * 3 = 6000
+
+            cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 0');
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 6,000');
+        });
+
+        it('移除商品後運費應該重新計算', async () => {
+            const product1 = {
+                id: '1',
+                name: 'iPhone 15 Pro',
+                price: 36900,
+                image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro'
+            };
+            const product2 = {
+                id: '2',
+                name: 'AirPods Pro',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+
+            // 添加兩個商品，總金額超過 $5000
+            window.addToCart(product1);
+            window.addToCart(product2);
+
+            let cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 0');
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 38,900');
+
+            // 移除昂貴商品，剩餘金額小於 $5000
+            window.removeFromCart('1');
+
+            cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.innerHTML).toContain('運費: NT$ 100');
+            expect(cartTotal.innerHTML).toContain('總金額: NT$ 2,100');
+        });
+
+        it('清空購物車後運費相關顯示應該隱藏', async () => {
+            const product = {
+                id: '1',
+                name: 'AirPods Pro',
+                price: 2000,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            };
+
+            window.addToCart(product);
+            window.clearAllCart();
+
+            const cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.style.display).toBe('none');
+        });
+    });
 });
