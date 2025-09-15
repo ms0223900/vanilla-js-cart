@@ -28,10 +28,6 @@
  * 購物車狀態資料結構
  * @typedef {Object} CartState
  * @property {CartItem[]} items - 購物車項目
- * @property {number} totalCount - 總數量
- * @property {number} totalPrice - 總價格
- * @property {number} shippingFee - 運費
- * @property {number} finalTotal - 最終總金額（商品總價 + 運費）
  */
 
 // 商品資料
@@ -109,11 +105,7 @@ const DOM_IDS = {
  * @returns {CartState} 空的購物車狀態
  */
 const createEmptyCart = () => ({
-    items: [],
-    totalCount: 0,
-    totalPrice: 0,
-    shippingFee: 0,
-    finalTotal: 0
+    items: []
 });
 
 /**
@@ -152,18 +144,18 @@ const calculateShippingFee = (totalPrice) => {
 const calculateFinalTotal = (totalPrice, shippingFee) => totalPrice + shippingFee;
 
 /**
- * 更新購物車狀態的計算屬性
+ * 計算購物車的派生資料
  * @param {CartState} cartState - 購物車狀態
- * @returns {CartState} 更新後的購物車狀態
+ * @returns {Object} 包含所有計算屬性的物件
  */
-const updateCartCalculations = (cartState) => {
+const calculateCartDerivedData = (cartState) => {
+    const totalCount = calculateTotalCount(cartState.items);
     const totalPrice = calculateTotalPrice(cartState.items);
     const shippingFee = calculateShippingFee(totalPrice);
     const finalTotal = calculateFinalTotal(totalPrice, shippingFee);
 
     return {
-        ...cartState,
-        totalCount: calculateTotalCount(cartState.items),
+        totalCount,
         totalPrice,
         shippingFee,
         finalTotal
@@ -209,12 +201,12 @@ const addItemToCart = (cartState, product) => {
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
         );
-        return updateCartCalculations({ ...cartState, items: updatedItems });
+        return { ...cartState, items: updatedItems };
     } else {
         // 如果商品不存在，添加新項目
         const newItem = createCartItem(product, 1);
         const updatedItems = [...cartState.items, newItem];
-        return updateCartCalculations({ ...cartState, items: updatedItems });
+        return { ...cartState, items: updatedItems };
     }
 };
 
@@ -226,7 +218,7 @@ const addItemToCart = (cartState, product) => {
  */
 const removeItemFromCart = (cartState, productId) => {
     const updatedItems = cartState.items.filter(item => item.id !== productId);
-    return updateCartCalculations({ ...cartState, items: updatedItems });
+    return { ...cartState, items: updatedItems };
 };
 
 /**
@@ -247,7 +239,7 @@ const updateItemQuantity = (cartState, productId, newQuantity) => {
             : item
     );
 
-    return updateCartCalculations({ ...cartState, items: updatedItems });
+    return { ...cartState, items: updatedItems };
 };
 
 /**
@@ -380,14 +372,8 @@ const safeSetToStorage = (key, value) => {
  */
 const loadCartFromStorage = () => {
     const savedItems = safeGetFromStorage(STORAGE_KEYS.CART, []);
-    const cartState = {
-        items: savedItems,
-        totalCount: 0,
-        totalPrice: 0,
-        shippingFee: 0,
-        finalTotal: 0
-    };
-    return isValidCartState(cartState) ? updateCartCalculations(cartState) : createEmptyCart();
+    const cartState = { items: savedItems };
+    return isValidCartState(cartState) ? cartState : createEmptyCart();
 };
 
 /**
@@ -489,12 +475,14 @@ const updateCartTotalDisplay = (totalPrice, shippingFee, finalTotal, isEmpty) =>
  * @param {CartState} cartState - 購物車狀態
  */
 const updateCartDisplayInternal = (cartState) => {
-    updateCartCountDisplay(cartState.totalCount);
+    const derivedData = calculateCartDerivedData(cartState);
+
+    updateCartCountDisplay(derivedData.totalCount);
     updateCartItemsDisplay(cartState.items);
     updateCartTotalDisplay(
-        cartState.totalPrice,
-        cartState.shippingFee,
-        cartState.finalTotal,
+        derivedData.totalPrice,
+        derivedData.shippingFee,
+        derivedData.finalTotal,
         cartState.items.length === 0
     );
 };
@@ -691,20 +679,35 @@ var changeQuantity = (productId, quantity) => cartManager.updateQuantity(product
 var clearAllCart = () => cartManager.clear();
 var updateCartCount = () => cartManager.updateDisplay();
 var updateCartDisplay = () => cartManager.updateDisplay();
-var calculateTotal = () => cartManager.getState().finalTotal;
+var calculateTotal = () => {
+    const state = cartManager.getState();
+    const derivedData = calculateCartDerivedData(state);
+    return derivedData.finalTotal;
+};
 var showMessage = (message) => showNotification(message);
 
 // 用於測試的函數
 var resetEverything = () => cartManager.reset();
 var debugCart = () => {
     const state = cartManager.getState();
+    const derivedData = calculateCartDerivedData(state);
     console.log('購物車內容:', state.items);
-    console.log('總數量:', state.totalCount);
-    console.log('總金額:', state.totalPrice);
+    console.log('總數量:', derivedData.totalCount);
+    console.log('總金額:', derivedData.totalPrice);
+    console.log('運費:', derivedData.shippingFee);
+    console.log('最終總額:', derivedData.finalTotal);
 };
 var validateCart = () => isValidCartState(cartManager.getState());
-var getCartItemCount = () => cartManager.getState().totalCount;
-var getCartTotalPrice = () => cartManager.getState().totalPrice;
+var getCartItemCount = () => {
+    const state = cartManager.getState();
+    const derivedData = calculateCartDerivedData(state);
+    return derivedData.totalCount;
+};
+var getCartTotalPrice = () => {
+    const state = cartManager.getState();
+    const derivedData = calculateCartDerivedData(state);
+    return derivedData.totalPrice;
+};
 var forceUpdate = () => cartManager.updateDisplay();
 
 // ============================================================================
@@ -746,6 +749,7 @@ if (typeof module !== 'undefined' && module.exports) {
         calculateTotalPrice,
         calculateShippingFee,
         calculateFinalTotal,
+        calculateCartDerivedData,
         addItemToCart,
         removeItemFromCart,
         updateItemQuantity,
