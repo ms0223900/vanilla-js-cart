@@ -57,6 +57,13 @@ const PRODUCTS = [
         price: 10900,
         image: 'https://via.placeholder.com/200x200/8E8E93/FFFFFF?text=Magic+Keyboard',
         description: '為 iPad 設計的鍵盤保護套'
+    },
+    {
+        id: '7',
+        name: 'Type-C傳輸線',
+        price: 300,
+        image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=Type-C傳輸線',
+        description: 'Type-C傳輸線'
     }
 ];
 
@@ -210,7 +217,8 @@ const showErrorState = (message = '載入失敗，請重新整理頁面') => {
  */
 const fetchProducts = async () => {
     // 模擬網路延遲
-    await new Promise(resolve => setTimeout(resolve, 1300));
+    await new Promise(resolve => setTimeout(resolve, 300));
+    console.log('fetchProducts', PRODUCTS);
     return Promise.resolve([...PRODUCTS]);
 };
 
