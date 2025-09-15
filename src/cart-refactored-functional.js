@@ -1,18 +1,10 @@
 // 函數式購物車重構版本 - 遵循 Clean Code 和函數式程式設計原則
+// 引入商品管理模組
+// <script src="product.js"></script>
 
 // ============================================================================
 // 資料結構和常數定義
 // ============================================================================
-
-/**
- * 商品資料結構
- * @typedef {Object} Product
- * @property {string} id - 商品 ID
- * @property {string} name - 商品名稱
- * @property {number} price - 商品價格
- * @property {string} image - 商品圖片 URL
- * @property {string} description - 商品描述
- */
 
 /**
  * 購物車項目資料結構
@@ -30,52 +22,6 @@
  * @property {CartItem[]} items - 購物車項目
  */
 
-// 商品資料
-const PRODUCTS = [
-    {
-        id: '1',
-        name: 'iPhone 15 Pro',
-        price: 36900,
-        image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro',
-        description: '最新的 iPhone 15 Pro，搭載 A17 Pro 晶片'
-    },
-    {
-        id: '2',
-        name: 'MacBook Air M2',
-        price: 37900,
-        image: 'https://via.placeholder.com/200x200/34C759/FFFFFF?text=MacBook+Air',
-        description: '輕薄便攜的 MacBook Air，搭載 M2 晶片'
-    },
-    {
-        id: '3',
-        name: 'AirPods Pro',
-        price: 7490,
-        image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro',
-        description: '主動降噪的無線耳機'
-    },
-    {
-        id: '4',
-        name: 'Apple Watch Series 9',
-        price: 12900,
-        image: 'https://via.placeholder.com/200x200/FF9500/FFFFFF?text=Apple+Watch',
-        description: '健康監測與運動追蹤的智慧手錶'
-    },
-    {
-        id: '5',
-        name: 'iPad Air',
-        price: 18900,
-        image: 'https://via.placeholder.com/200x200/5856D6/FFFFFF?text=iPad+Air',
-        description: '多功能平板電腦，適合工作與娛樂'
-    },
-    {
-        id: '6',
-        name: 'Magic Keyboard',
-        price: 10900,
-        image: 'https://via.placeholder.com/200x200/8E8E93/FFFFFF?text=Magic+Keyboard',
-        description: '為 iPad 設計的鍵盤保護套'
-    }
-];
-
 // 本地儲存鍵值
 const STORAGE_KEYS = {
     CART: 'shoppingCart'
@@ -92,8 +38,7 @@ const DOM_IDS = {
     CART_COUNT: 'cart-count',
     CART_ITEMS: 'cart-items',
     CART_TOTAL: 'cart-total',
-    EMPTY_CART: 'empty-cart',
-    PRODUCTS_CONTAINER: 'products-container'
+    EMPTY_CART: 'empty-cart'
 };
 
 // ============================================================================
@@ -276,12 +221,7 @@ const isValidCartState = (cartState) =>
 // 純函數 - 資料轉換和格式化
 // ============================================================================
 
-/**
- * 格式化價格顯示
- * @param {number} price - 價格
- * @returns {string} 格式化後的價格字串
- */
-const formatPrice = (price) => `NT$ ${price.toLocaleString()}`;
+// formatPrice 函數使用 product.js 模組中的版本
 
 /**
  * 將購物車項目轉換為 HTML 字串
@@ -309,26 +249,7 @@ const cartItemToHtml = (item) => `
     </div>
 `;
 
-/**
- * 將商品轉換為 HTML 字串
- * @param {Product} product - 商品資料
- * @returns {string} HTML 字串
- */
-const productToHtml = (product) => `
-    <div class="product-card">
-        <div class="product-image">
-            <img src="${product.image}" alt="${product.name}">
-        </div>
-        <div class="product-info">
-            <h3>${product.name}</h3>
-            <p class="product-description">${product.description}</p>
-            <p class="product-price">${formatPrice(product.price)}</p>
-            <button class="add-to-cart-btn" onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})">
-                加入購物車
-            </button>
-        </div>
-    </div>
-`;
+// productToHtml 函數已移至 product.js 模組
 
 // ============================================================================
 // 副作用函數 - 本地儲存操作
@@ -389,18 +310,7 @@ const saveCartToStorage = (cartState) => {
 // 副作用函數 - DOM 操作
 // ============================================================================
 
-/**
- * 安全地取得 DOM 元素
- * @param {string} id - 元素 ID
- * @returns {HTMLElement|null} DOM 元素或 null
- */
-const safeGetElement = (id) => {
-    const element = document.getElementById(id);
-    if (!element) {
-        console.warn(`找不到 DOM 元素: ${id}`);
-    }
-    return element;
-};
+// safeGetElement 函數使用 product.js 模組中的版本
 
 /**
  * 更新購物車計數顯示
@@ -513,57 +423,7 @@ const showNotification = (message, duration = 3000) => {
     }, duration);
 };
 
-/**
- * 渲染商品列表
- * @param {Product[]} products - 商品陣列
- */
-const renderProductsList = (products) => {
-    const container = safeGetElement(DOM_IDS.PRODUCTS_CONTAINER);
-    if (!container) return;
-
-    const html = products.map(productToHtml).join('');
-    container.innerHTML = html;
-};
-
-/**
- * 顯示載入狀態
- * @param {string} message - 載入訊息
- */
-const showLoadingState = (message = '載入中...') => {
-    const container = safeGetElement(DOM_IDS.PRODUCTS_CONTAINER);
-    if (container) {
-        container.innerHTML = `<div class="loading">${message}</div>`;
-    }
-};
-
-// ============================================================================
-// 副作用函數 - 非同步操作
-// ============================================================================
-
-/**
- * 模擬非同步獲取商品資料
- * @returns {Promise<Product[]>} 商品陣列
- */
-const fetchProducts = async () => {
-    // 模擬網路延遲
-    await new Promise(resolve => setTimeout(resolve, 1300));
-    return Promise.resolve([...PRODUCTS]);
-};
-
-/**
- * 載入並渲染商品列表
- * @returns {Promise<void>}
- */
-const loadAndRenderProducts = async () => {
-    try {
-        showLoadingState();
-        const products = await fetchProducts();
-        renderProductsList(products);
-    } catch (error) {
-        console.error('載入商品失敗:', error);
-        showLoadingState('載入失敗，請重新整理頁面');
-    }
-};
+// 商品相關的函數已移至 product.js 模組
 
 // ============================================================================
 // 購物車狀態管理
@@ -718,8 +578,12 @@ var forceUpdate = () => cartManager.updateDisplay();
  * 初始化頁面
  */
 const initializePage = () => {
-    // 載入商品列表
-    loadAndRenderProducts();
+    // 載入商品列表（使用 product.js 模組）
+    if (typeof loadAndRenderProducts === 'function') {
+        loadAndRenderProducts();
+    } else {
+        console.warn('product.js 模組未載入，無法顯示商品列表');
+    }
 
     // 更新購物車顯示
     cartManager.updateDisplay();
@@ -783,7 +647,6 @@ if (typeof module !== 'undefined' && module.exports) {
         forceUpdate,
 
         // 常數
-        PRODUCTS,
         STORAGE_KEYS,
         SHIPPING_CONFIG,
         DOM_IDS

@@ -6,6 +6,10 @@ const { JSDOM } = require('jsdom');
 const cartHtmlPath = path.join(__dirname, 'cart.html');
 const cartHtmlContent = fs.readFileSync(cartHtmlPath, 'utf8');
 
+// 讀取商品腳本內容
+const productScriptPath = path.join(__dirname, 'product.js');
+const productScriptContent = fs.readFileSync(productScriptPath, 'utf8');
+
 // 讀取購物車腳本內容
 const cartScriptPath = path.join(__dirname, 'cart-refactored-functional.js');
 let cartScriptContent = fs.readFileSync(cartScriptPath, 'utf8');
@@ -52,9 +56,10 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         global.document = document;
         global.localStorage = localStorage;
 
-        // 在 window 上下文中執行購物車腳本
-        // 先設置全局變量
+        // 在 window 上下文中執行腳本
+        // 先載入商品模組，再載入購物車腳本
         window.eval(`
+            ${productScriptContent}
             ${cartScriptContent}
             
             // 將函數掛載到 window 對象上以便測試可以訪問
