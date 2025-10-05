@@ -510,9 +510,86 @@ class CartManager {
      * 顯示清空購物車確認對話框
      */
     showClearCartConfirmation() {
-        const confirmed = confirm('你確定要清空嗎？');
-        if (confirmed) {
-            this.clear();
+        this.showConfirmModal();
+    }
+
+    /**
+     * 顯示確認模態對話框
+     */
+    showConfirmModal() {
+        const modal = document.getElementById('confirm-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            // 防止背景滾動
+            document.body.style.overflow = 'hidden';
+
+            // 添加ESC鍵監聽器
+            this.addModalEventListeners();
+        }
+    }
+
+    /**
+     * 隱藏確認模態對話框
+     */
+    hideConfirmModal() {
+        const modal = document.getElementById('confirm-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            // 恢復背景滾動
+            document.body.style.overflow = 'auto';
+
+            // 移除事件監聽器
+            this.removeModalEventListeners();
+        }
+    }
+
+    /**
+     * 確認清空購物車
+     */
+    confirmClearCart() {
+        this.hideConfirmModal();
+        this.clear();
+    }
+
+    /**
+     * 添加模態對話框事件監聽器
+     */
+    addModalEventListeners() {
+        // ESC鍵關閉
+        this.escKeyHandler = (event) => {
+            if (event.key === 'Escape') {
+                this.hideConfirmModal();
+            }
+        };
+        document.addEventListener('keydown', this.escKeyHandler);
+
+        // 點擊背景關閉
+        const modal = document.getElementById('confirm-modal');
+        if (modal) {
+            this.backgroundClickHandler = (event) => {
+                if (event.target === modal) {
+                    this.hideConfirmModal();
+                }
+            };
+            modal.addEventListener('click', this.backgroundClickHandler);
+        }
+    }
+
+    /**
+     * 移除模態對話框事件監聽器
+     */
+    removeModalEventListeners() {
+        if (this.escKeyHandler) {
+            document.removeEventListener('keydown', this.escKeyHandler);
+            this.escKeyHandler = null;
+        }
+
+        if (this.backgroundClickHandler) {
+            const modal = document.getElementById('confirm-modal');
+            if (modal) {
+                modal.removeEventListener('click', this.backgroundClickHandler);
+                this.backgroundClickHandler = null;
+            }
         }
     }
 
@@ -555,6 +632,19 @@ var calculateTotal = () => {
     return derivedData.finalTotal;
 };
 var showMessage = (message) => showNotification(message);
+
+// 模態對話框相關的全域函數
+var closeConfirmModal = () => {
+    if (cartManager) {
+        cartManager.hideConfirmModal();
+    }
+};
+
+var confirmClearCart = () => {
+    if (cartManager) {
+        cartManager.confirmClearCart();
+    }
+};
 
 // 用於測試的函數
 var resetEverything = () => cartManager.reset();
