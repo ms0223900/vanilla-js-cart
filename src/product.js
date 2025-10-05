@@ -20,49 +20,49 @@ const PRODUCTS = [
         id: '1',
         name: 'iPhone 15 Pro',
         price: 36900,
-        image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro',
+        image: '/public/assets/product-iphone.webp',
         description: '最新的 iPhone 15 Pro，搭載 A17 Pro 晶片'
     },
     {
         id: '2',
         name: 'MacBook Air M2',
         price: 37900,
-        image: 'https://via.placeholder.com/200x200/34C759/FFFFFF?text=MacBook+Air',
+        image: '/public/assets/product-macbook-air.webp',
         description: '輕薄便攜的 MacBook Air，搭載 M2 晶片'
     },
     {
         id: '3',
         name: 'AirPods Pro',
         price: 7490,
-        image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro',
+        image: '/public/assets/product-air-pod.webp',
         description: '主動降噪的無線耳機'
     },
     {
         id: '4',
         name: 'Apple Watch Series 9',
         price: 12900,
-        image: 'https://via.placeholder.com/200x200/FF9500/FFFFFF?text=Apple+Watch',
+        image: '/public/assets/product-apple-watch.webp',
         description: '健康監測與運動追蹤的智慧手錶'
     },
     {
         id: '5',
         name: 'iPad Air',
         price: 18900,
-        image: 'https://via.placeholder.com/200x200/5856D6/FFFFFF?text=iPad+Air',
+        image: '/public/assets/product-ipad.webp',
         description: '多功能平板電腦，適合工作與娛樂'
     },
     {
         id: '6',
         name: 'Magic Keyboard',
         price: 10900,
-        image: 'https://via.placeholder.com/200x200/8E8E93/FFFFFF?text=Magic+Keyboard',
+        image: '/public/assets/product-magic-keyboard.webp',
         description: '為 iPad 設計的鍵盤保護套'
     },
     {
         id: '7',
         name: 'Type-C傳輸線',
         price: 300,
-        image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=Type-C傳輸線',
+        image: '/public/assets/product-type-c-cable.webp',
         description: 'Type-C傳輸線'
     }
 ];

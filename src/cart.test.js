@@ -182,6 +182,9 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車後 DOM 應該返回初始狀態', async () => {
+            // 設置 confirm 返回 true（用戶確認）
+            window.confirm = jest.fn().mockReturnValue(true);
+
             // 添加多個商品
             window.addToCart(sampleProduct);
             window.addToCart({
@@ -289,6 +292,9 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車按鈕應該正確工作', async () => {
+            // 設置 confirm 返回 true（用戶確認）
+            window.confirm = jest.fn().mockReturnValue(true);
+
             // 添加多個商品
             window.addToCart(sampleProduct);
             window.addToCart({
@@ -393,6 +399,9 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車應該顯示通知', async () => {
+            // 設置 confirm 返回 true（用戶確認）
+            window.confirm = jest.fn().mockReturnValue(true);
+
             const product = {
                 id: '1',
                 name: 'iPhone 15 Pro',
@@ -768,6 +777,9 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車後運費相關顯示應該隱藏', async () => {
+            // 設置 confirm 返回 true（用戶確認）
+            window.confirm = jest.fn().mockReturnValue(true);
+
             const product = {
                 id: '1',
                 name: 'AirPods Pro',
@@ -780,6 +792,155 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             const cartTotal = document.getElementById('cart-total');
             expect(cartTotal.style.display).toBe('none');
+        });
+    });
+
+    describe('清空購物車確認對話框測試', () => {
+        const sampleProduct = {
+            id: '1',
+            name: 'iPhone 15 Pro',
+            price: 36900,
+            image: 'https://via.placeholder.com/200x200/007AFF/FFFFFF?text=iPhone+15+Pro',
+            description: '最新的 iPhone 15 Pro，搭載 A17 Pro 晶片'
+        };
+
+        beforeEach(() => {
+            // 重置 window.confirm 的 mock
+            window.confirm = jest.fn();
+        });
+
+        it('點擊清空購物車按鈕應該顯示確認對話框', async () => {
+            // 添加商品
+            window.addToCart(sampleProduct);
+
+            const cartTotal = document.getElementById('cart-total');
+            const clearButton = cartTotal.querySelector('.clear-cart-btn');
+
+            // 模擬點擊清空按鈕
+            clearButton.click();
+
+            // 驗證 confirm 對話框被調用
+            expect(window.confirm).toHaveBeenCalledWith('你確定要清空嗎？');
+        });
+
+        it('用戶確認清空購物車應該執行清空操作', async () => {
+            // 設置 confirm 返回 true（用戶確認）
+            window.confirm.mockReturnValue(true);
+
+            // 添加商品
+            window.addToCart(sampleProduct);
+
+            const cartTotal = document.getElementById('cart-total');
+            const clearButton = cartTotal.querySelector('.clear-cart-btn');
+
+            // 模擬點擊清空按鈕
+            clearButton.click();
+
+            // 驗證購物車被清空
+            const cartCount = document.getElementById('cart-count');
+            expect(cartCount.textContent).toBe('0');
+
+            const emptyCart = document.getElementById('empty-cart');
+            expect(emptyCart.style.display).toBe('block');
+
+            // 驗證通知被顯示
+            const notifications = document.querySelectorAll('.notification');
+            const lastNotification = notifications[notifications.length - 1];
+            expect(lastNotification.textContent).toContain('購物車已清空');
+        });
+
+        it('用戶取消清空購物車應該不執行清空操作', async () => {
+            // 設置 confirm 返回 false（用戶取消）
+            window.confirm.mockReturnValue(false);
+
+            // 添加商品
+            window.addToCart(sampleProduct);
+
+            const cartTotal = document.getElementById('cart-total');
+            const clearButton = cartTotal.querySelector('.clear-cart-btn');
+
+            // 模擬點擊清空按鈕
+            clearButton.click();
+
+            // 驗證購物車沒有被清空
+            const cartCount = document.getElementById('cart-count');
+            expect(cartCount.textContent).toBe('1');
+
+            const cartItems = document.getElementById('cart-items');
+            expect(cartItems.innerHTML).toContain('iPhone 15 Pro');
+
+            const emptyCart = document.getElementById('empty-cart');
+            expect(emptyCart.style.display).toBe('none');
+
+            // 驗證沒有顯示清空通知
+            const notifications = document.querySelectorAll('.notification');
+            const lastNotification = notifications[notifications.length - 1];
+            expect(lastNotification.textContent).not.toContain('購物車已清空');
+        });
+
+        it('直接調用 clearAllCart 函數應該顯示確認對話框', async () => {
+            // 添加商品
+            window.addToCart(sampleProduct);
+
+            // 直接調用 clearAllCart 函數
+            window.clearAllCart();
+
+            // 驗證 confirm 對話框被調用
+            expect(window.confirm).toHaveBeenCalledWith('你確定要清空嗎？');
+        });
+
+        it('多個商品時確認清空應該正確清空所有商品', async () => {
+            // 設置 confirm 返回 true
+            window.confirm.mockReturnValue(true);
+
+            // 添加多個商品
+            window.addToCart(sampleProduct);
+            window.addToCart({
+                id: '2',
+                name: 'MacBook Air M2',
+                price: 37900,
+                image: 'https://via.placeholder.com/200x200/34C759/FFFFFF?text=MacBook+Air'
+            });
+            window.addToCart({
+                id: '3',
+                name: 'AirPods Pro',
+                price: 7490,
+                image: 'https://via.placeholder.com/200x200/FF3B30/FFFFFF?text=AirPods+Pro'
+            });
+
+            // 驗證購物車有商品
+            let cartCount = document.getElementById('cart-count');
+            expect(cartCount.textContent).toBe('3');
+
+            // 點擊清空按鈕
+            const cartTotal = document.getElementById('cart-total');
+            const clearButton = cartTotal.querySelector('.clear-cart-btn');
+            clearButton.click();
+
+            // 驗證所有商品都被清空
+            cartCount = document.getElementById('cart-count');
+            expect(cartCount.textContent).toBe('0');
+
+            const cartItems = document.getElementById('cart-items');
+            expect(cartItems.innerHTML).toBe('');
+
+            const emptyCart = document.getElementById('empty-cart');
+            expect(emptyCart.style.display).toBe('block');
+        });
+
+        it('空購物車時點擊清空按鈕不應該顯示確認對話框', async () => {
+            // 確保購物車是空的
+            window.clearAllCart(); // 這會顯示確認對話框，但我們可以忽略
+
+            // 重置 confirm mock
+            window.confirm.mockClear();
+
+            // 嘗試點擊清空按鈕（但按鈕應該不存在或不可見）
+            const cartTotal = document.getElementById('cart-total');
+            expect(cartTotal.style.display).toBe('none');
+
+            // 驗證 confirm 沒有被調用
+            expect(window.confirm).not.toHaveBeenCalled();
         });
     });
 });

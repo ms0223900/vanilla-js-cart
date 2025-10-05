@@ -507,6 +507,16 @@ class CartManager {
     }
 
     /**
+     * 顯示清空購物車確認對話框
+     */
+    showClearCartConfirmation() {
+        const confirmed = confirm('你確定要清空嗎？');
+        if (confirmed) {
+            this.clear();
+        }
+    }
+
+    /**
      * 重置購物車（用於測試）
      */
     reset() {
@@ -536,7 +546,7 @@ const cartManager = new CartManager();
 var addToCart = (product) => cartManager.addItem(product);
 var removeFromCart = (productId) => cartManager.removeItem(productId);
 var changeQuantity = (productId, quantity) => cartManager.updateQuantity(productId, quantity);
-var clearAllCart = () => cartManager.clear();
+var clearAllCart = () => cartManager.showClearCartConfirmation();
 var updateCartCount = () => cartManager.updateDisplay();
 var updateCartDisplay = () => cartManager.updateDisplay();
 var calculateTotal = () => {

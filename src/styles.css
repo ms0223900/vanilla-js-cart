@@ -20,6 +20,9 @@ body {
 
 /* 標題樣式 */
 .header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 1rem 0;
