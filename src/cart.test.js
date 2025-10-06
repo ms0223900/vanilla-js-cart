@@ -182,9 +182,6 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車後 DOM 應該返回初始狀態', async () => {
-            // 設置 confirm 返回 true（用戶確認）
-            window.confirm = jest.fn().mockReturnValue(true);
-
             // 添加多個商品
             window.addToCart(sampleProduct);
             window.addToCart({
@@ -197,6 +194,12 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             // 清空購物車
             window.clearAllCart();
+
+            // 點擊確認按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            if (confirmButton) {
+                confirmButton.click();
+            }
 
             // 驗證所有 DOM 元素回到初始狀態
             const cartCount = document.getElementById('cart-count');
@@ -292,9 +295,6 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車按鈕應該正確工作', async () => {
-            // 設置 confirm 返回 true（用戶確認）
-            window.confirm = jest.fn().mockReturnValue(true);
-
             // 添加多個商品
             window.addToCart(sampleProduct);
             window.addToCart({
@@ -312,6 +312,12 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             // 模擬點擊清空按鈕
             clearButton.click();
+
+            // 點擊確認按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            if (confirmButton) {
+                confirmButton.click();
+            }
 
             // 驗證購物車被清空
             const cartCount = document.getElementById('cart-count');
@@ -399,9 +405,6 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車應該顯示通知', async () => {
-            // 設置 confirm 返回 true（用戶確認）
-            window.confirm = jest.fn().mockReturnValue(true);
-
             const product = {
                 id: '1',
                 name: 'iPhone 15 Pro',
@@ -411,6 +414,12 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             window.addToCart(product);
             window.clearAllCart();
+
+            // 點擊確認按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            if (confirmButton) {
+                confirmButton.click();
+            }
 
             const notifications = document.querySelectorAll('.notification');
             const lastNotification = notifications[notifications.length - 1];
@@ -777,9 +786,6 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
         });
 
         it('清空購物車後運費相關顯示應該隱藏', async () => {
-            // 設置 confirm 返回 true（用戶確認）
-            window.confirm = jest.fn().mockReturnValue(true);
-
             const product = {
                 id: '1',
                 name: 'AirPods Pro',
@@ -789,6 +795,12 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             window.addToCart(product);
             window.clearAllCart();
+
+            // 點擊確認按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            if (confirmButton) {
+                confirmButton.click();
+            }
 
             const cartTotal = document.getElementById('cart-total');
             expect(cartTotal.style.display).toBe('none');
@@ -804,12 +816,7 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             description: '最新的 iPhone 15 Pro，搭載 A17 Pro 晶片'
         };
 
-        beforeEach(() => {
-            // 重置 window.confirm 的 mock
-            window.confirm = jest.fn();
-        });
-
-        it('點擊清空購物車按鈕應該顯示確認對話框', async () => {
+        it('點擊清空購物車按鈕應該顯示自定義確認對話框', async () => {
             // 添加商品
             window.addToCart(sampleProduct);
 
@@ -819,14 +826,16 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             // 模擬點擊清空按鈕
             clearButton.click();
 
-            // 驗證 confirm 對話框被調用
-            expect(window.confirm).toHaveBeenCalledWith('你確定要清空嗎？');
+            // 驗證模態對話框被顯示
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('flex');
+
+            // 驗證對話框內容
+            expect(modal.querySelector('.modal-header h3').textContent).toBe('確認清空購物車');
+            expect(modal.querySelector('.modal-body p').textContent).toBe('你確定要清空購物車嗎？');
         });
 
-        it('用戶確認清空購物車應該執行清空操作', async () => {
-            // 設置 confirm 返回 true（用戶確認）
-            window.confirm.mockReturnValue(true);
-
+        it('用戶點擊確定按鈕應該執行清空操作', async () => {
             // 添加商品
             window.addToCart(sampleProduct);
 
@@ -835,6 +844,10 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             // 模擬點擊清空按鈕
             clearButton.click();
+
+            // 模擬點擊確定按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            confirmButton.click();
 
             // 驗證購物車被清空
             const cartCount = document.getElementById('cart-count');
@@ -847,12 +860,13 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             const notifications = document.querySelectorAll('.notification');
             const lastNotification = notifications[notifications.length - 1];
             expect(lastNotification.textContent).toContain('購物車已清空');
+
+            // 驗證模態對話框被隱藏
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('none');
         });
 
-        it('用戶取消清空購物車應該不執行清空操作', async () => {
-            // 設置 confirm 返回 false（用戶取消）
-            window.confirm.mockReturnValue(false);
-
+        it('用戶點擊取消按鈕應該不執行清空操作', async () => {
             // 添加商品
             window.addToCart(sampleProduct);
 
@@ -861,6 +875,10 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
             // 模擬點擊清空按鈕
             clearButton.click();
+
+            // 模擬點擊取消按鈕
+            const cancelButton = document.querySelector('.btn-secondary');
+            cancelButton.click();
 
             // 驗證購物車沒有被清空
             const cartCount = document.getElementById('cart-count');
@@ -876,6 +894,10 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             const notifications = document.querySelectorAll('.notification');
             const lastNotification = notifications[notifications.length - 1];
             expect(lastNotification.textContent).not.toContain('購物車已清空');
+
+            // 驗證模態對話框被隱藏
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('none');
         });
 
         it('直接調用 clearAllCart 函數應該顯示確認對話框', async () => {
@@ -885,14 +907,12 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             // 直接調用 clearAllCart 函數
             window.clearAllCart();
 
-            // 驗證 confirm 對話框被調用
-            expect(window.confirm).toHaveBeenCalledWith('你確定要清空嗎？');
+            // 驗證模態對話框被顯示
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('flex');
         });
 
         it('多個商品時確認清空應該正確清空所有商品', async () => {
-            // 設置 confirm 返回 true
-            window.confirm.mockReturnValue(true);
-
             // 添加多個商品
             window.addToCart(sampleProduct);
             window.addToCart({
@@ -917,6 +937,10 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
             const clearButton = cartTotal.querySelector('.clear-cart-btn');
             clearButton.click();
 
+            // 點擊確定按鈕
+            const confirmButton = document.querySelector('.btn-danger');
+            confirmButton.click();
+
             // 驗證所有商品都被清空
             cartCount = document.getElementById('cart-count');
             expect(cartCount.textContent).toBe('0');
@@ -930,17 +954,41 @@ describe('購物車 DOM 驗證測試 (重構友善)', () => {
 
         it('空購物車時點擊清空按鈕不應該顯示確認對話框', async () => {
             // 確保購物車是空的
-            window.clearAllCart(); // 這會顯示確認對話框，但我們可以忽略
+            window.clearAllCart();
 
-            // 重置 confirm mock
-            window.confirm.mockClear();
+            // 點擊確定清空
+            const confirmButton = document.querySelector('.btn-danger');
+            if (confirmButton) {
+                confirmButton.click();
+            }
 
             // 嘗試點擊清空按鈕（但按鈕應該不存在或不可見）
             const cartTotal = document.getElementById('cart-total');
             expect(cartTotal.style.display).toBe('none');
 
-            // 驗證 confirm 沒有被調用
-            expect(window.confirm).not.toHaveBeenCalled();
+            // 驗證模態對話框沒有被顯示
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('none');
+        });
+
+        it('點擊模態對話框關閉按鈕應該隱藏對話框', async () => {
+            // 添加商品
+            window.addToCart(sampleProduct);
+
+            // 顯示模態對話框
+            window.clearAllCart();
+
+            // 點擊關閉按鈕
+            const closeButton = document.querySelector('.modal-close');
+            closeButton.click();
+
+            // 驗證模態對話框被隱藏
+            const modal = document.getElementById('confirm-modal');
+            expect(modal.style.display).toBe('none');
+
+            // 驗證購物車沒有被清空
+            const cartCount = document.getElementById('cart-count');
+            expect(cartCount.textContent).toBe('1');
         });
     });
 });
