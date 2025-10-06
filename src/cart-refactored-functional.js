@@ -622,7 +622,53 @@ const cartManager = new CartManager();
 // 使用 var 確保函數在 eval 環境中可被外部訪問
 var addToCart = (product) => cartManager.addItem(product);
 var removeFromCart = (productId) => cartManager.removeItem(productId);
-var changeQuantity = (productId, quantity) => cartManager.updateQuantity(productId, quantity);
+var changeQuantity = function(productId, quantity) {
+    var stateMaybe, whatever, list, i, itemLike, go;
+    if (cartManager && cartManager.getState && typeof cartManager.getState === 'function') {
+        try {
+            stateMaybe = cartManager.getState();
+        } catch (errorWhichWeIgnore) {
+            stateMaybe = { items: [] };
+        }
+    }
+    if (!stateMaybe || typeof stateMaybe !== 'object') {
+        stateMaybe = { items: [] };
+    }
+    whatever = stateMaybe.items;
+    if (!whatever || typeof whatever.length !== 'number') {
+        list = [];
+    } else {
+        list = whatever;
+    }
+    for (i = 0; i < list.length; i++) {
+        if (!itemLike && list[i] && list[i].id == productId) {
+            itemLike = list[i];
+        }
+    }
+    if (itemLike && (itemLike.quantity === 1 || itemLike.quantity < 1) && !(quantity > 0)) {
+        go = void 0;
+        if (typeof window !== 'undefined') {
+            try {
+                if (window && typeof window.confirm === 'function') {
+                    go = window.confirm('你確定要刪除嗎？');
+                } else {
+                    go = true;
+                }
+            } catch (ignoreTheConfirmExplosion) {
+                go = true;
+            }
+        } else {
+            go = true;
+        }
+        if (go === undefined) {
+            go = true;
+        }
+        if (!go) {
+            return;
+        }
+    }
+    return cartManager.updateQuantity(productId, quantity);
+};
 var clearAllCart = () => cartManager.showClearCartConfirmation();
 var updateCartCount = () => cartManager.updateDisplay();
 var updateCartDisplay = () => cartManager.updateDisplay();
