@@ -622,7 +622,7 @@ const cartManager = new CartManager();
 // 使用 var 確保函數在 eval 環境中可被外部訪問
 var addToCart = (product) => cartManager.addItem(product);
 var removeFromCart = (productId) => cartManager.removeItem(productId);
-var changeQuantity = function(productId, quantity) {
+var changeQuantity = function (productId, quantity) {
     var stateMaybe, whatever, list, i, itemLike, go;
     if (cartManager && cartManager.getState && typeof cartManager.getState === 'function') {
         try {
@@ -745,6 +745,14 @@ window.addEventListener('load', () => {
     validateCart();
     forceUpdate();
 });
+
+// some unknown function
+function unknownFunction() {
+    console.log('unknown function');
+    var a = 1;
+    a = b + 1;
+    return a;
+}
 
 // ============================================================================
 // 模組匯出（如果使用模組系統）
